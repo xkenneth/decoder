@@ -6,10 +6,10 @@ from PyDrill.Generation.TwoOfFive import Symbols
 from ZODB import FileStorage, DB
 import mx.DateTime
 import time
+import pdb
 
 
-
-optlist, args = getopt.getopt(sys.argv[1:],'',['readonly','reset','today','server=','showdeltas','showdots'])
+optlist, args = getopt.getopt(sys.argv[1:],'',['readonly','reset','today','server=','showdeltas','showdots','debug-with-comm','print-count'])
 
 print optlist, args
 
@@ -28,6 +28,8 @@ port = 8050
 show_deltas = False
 show_dots = False
 last = None
+debug_with_comm = False
+print_count = False
 
 for opt in optlist:
     if opt[0] == '--server':
@@ -42,6 +44,11 @@ for opt in optlist:
         show_deltas = True
     if opt[0] == '--showdots':
         show_dots = True
+    if opt[0] == '--debug-with-comm':
+        debug_with_comm = True
+    if opt[0] == '--count':
+        print_count = True
+    
     
         
 try:
@@ -54,54 +61,87 @@ try:
     
 
 
-    #open a connection to the decoder server
-    print "Initiating Client"
-    if server is None:
-        database_connection = DataBase.Layer(configFile='zeoClient.cfg')
-    else:
-        database_connection = DataBase.Layer(host=server,port=port)
-        
-    print "Client Initiated"
-    decoder = SymbolDecoder.SymbolDecoder()
-    decoder.addSymbols(symbols=Symbols.generateSymbols(),identifiers=Symbols.generateIdentifiers())
+    recieved_pulses = 0
     pulses = []
+    previous_pulses = []
+
+    print "Client Initiated"
+    decoder = SymbolDecoder.SymbolDecoder(jitter_magnitude=2)
+    decoder.addSymbols(symbols=Symbols.generateSymbols(),identifiers=Symbols.generateIdentifiers())
+    pdb.set_trace()
     key = 'pulse'
 
+    if not debug_with_comm:
+        #open a connection to the decoder ZEO server
+        print "Initiating Client"
+        if server is None:
+            database_connection = DataBase.Layer(configFile='zeoClient.cfg')
+        else:
+            database_connection = DataBase.Layer(host=server,port=port)
+    else: 
+        import LabVIEWWrapper
+        glue = LabVIEWWrapper.LabVIEWWrapper()
+        
+        
     while(1):
         if len(pulses) == 0:
             #print "Retrieving pulses..."
             
             #print "Last Key: ",root['lastKey']
             
-            try:
-
-                if root['lastKey'] is None:
-                    pulses = database_connection.slice(key='pulse',first=10)
-                else:
-                    pulses = database_connection.slice(key='pulse',begin=root['lastKey'],first=10)
-
-                if show_dots:
-                    print "."*len(pulses)
+            if not debug_with_comm:
+                try:
                     
-                root['lastKey'] = pulses[-1].timeStamp
+                    if root['lastKey'] is None:
+                        pulses = database_connection.slice(key='pulse',first=10)
+                        
+                    else:
+                        pulses = database_connection.slice(key='pulse',begin=root['lastKey'],first=10)
 
-            except KeyError:
+                    recieved_pulses += len(pulses) - 1
 
-                print "No Pulses Yet Available..Sleeping..."
-                time.sleep(1)
+                    if print_count:
+                        print recieved_pulses
+                        
+
+                    if show_dots:
+                        print "."*len(pulses)
+                        
+                    root['lastKey'] = pulses[-1].timeStamp
+
+                except KeyError:
+                    print "No Pulses Yet Available..Sleeping..."
+                    time.sleep(1)
+                    
+                try:
+                    pulses.pop(-1)
+                except IndexError:
+                    pass
+
+            else:
+                #get a section of pulses from the labview wrapper
+                new_pulses = glue.serve()
+                if new_pulses != None and new_pulses != []:
+                    if len(previous_pulses) == 0:
+                        new = new_pulses.pop(0)
+                        previous_pulses.append(new)
+                        pulses.append(new)
+                    else:
+                        for new in new_pulses:
+                            present = False
+                            for old in previous_pulses:
+                                if new == old:
+                                    present = present or True
+                            previous_pulses.append(new)
+                            if not present:
+                                recieved_pulses += 1
+                                if print_count:
+                                    print recieved_pulses
+                                print new
+                                pulses.append(new)
+                else:
+                    time.sleep(0.5)
                 
-            
-            #if show_deltas:
-            #    for p in pulses:
-            #        if last is not None:
-            #            print p.timeStamp-last.timeStamp
-            #        last = p
-
-        try:
-            pulses.pop(-1)
-        except IndexError:
-            pass
-
         while(1):
 
             try:
@@ -122,11 +162,12 @@ try:
             if new_data is not None:
                 print "!",new_data
                 if not readonly:
-                    pass
-                    try:
-                        database_connection.newData(new_data)
-                    except ValueError, e:
-                        print e
+                    if not debug_with_comm:
+                        try:
+                            database_connection.newData(new_data)
+                        except ValueError, e:
+                            print e
+                            
 
         #time.sleep(.25)
     
