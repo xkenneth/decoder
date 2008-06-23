@@ -68,7 +68,6 @@ try:
     print "Client Initiated"
     decoder = SymbolDecoder.SymbolDecoder(jitter_magnitude=2)
     decoder.addSymbols(symbols=Symbols.generateSymbols(),identifiers=Symbols.generateIdentifiers())
-    pdb.set_trace()
     key = 'pulse'
 
     if not debug_with_comm:
