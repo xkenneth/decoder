@@ -1,4 +1,4 @@
-import sys
+ximport sys
 import getopt
 from PyDrill import DataBase
 from PyDrill.Decoders.TwoOfFive import SymbolDecoder

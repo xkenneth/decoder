@@ -16,18 +16,22 @@ SECTION = 'persistent'
 LAST = 'last'
 #for holding the last timestamp
 last = None
-reset = False #for wiping out the database
+reset = False #for resetting the last value
+clear = False
 pulse = None
 
 decoder = SymbolDecoder.SymbolDecoder(jitter_magnitude=3)
 decoder.addSymbols(symbols=Symbols.generateSymbols(),identifiers=Symbols.generateIdentifiers())
 
 #parse opts
-optlist, args = getopt.getopt(sys.argv[1:],'',['reset'])
+optlist, args = getopt.getopt(sys.argv[1:],'',['reset','clear'])
 
 for opt in optlist:
     if opt[0] == '--reset':
         reset = True
+    if opt[0] == '--clear':
+        clear = True
+        reset = True #we have to reset as well
 
 #get the pulse
 ts_string = ''.join(args)
@@ -37,7 +41,7 @@ if ts_string != '':
 
 #open the local pulse database
 layer = Layer(file='local.fs')
-if reset:
+if clear:
     layer.cleanSystem()
 
 #get the local settings
