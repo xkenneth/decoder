@@ -114,7 +114,7 @@ if __name__ == '__main__':
             print t
             
             x+=1
-            time.sleep(1)
+            time.sleep(5)
         
         
     
