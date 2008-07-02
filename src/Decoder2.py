@@ -106,63 +106,54 @@ class Decoder:
         data = []
 
         found_id = False
+        
+        #while we still have data....
         while(1):
-            for id in self.identifiers:
-                id_pulses,trash = self.sim.make([id],buffer[0])
-                id_pulses = to_ts(id_pulses) #convert to TS
-                got_enough(id_pulses,buffer)
-                if match(id_pulses,buffer,self.jitter):
-                    id.pulses = to_pulse(id_pulses)
-                    data.append(id)
-                    found_id |= True
-            if found_id:
-                break
-            buffer.pop(0) #else pop and search
+
+            while(1):
+                for id in self.identifiers:
+                    id_pulses,trash = self.sim.make([id],buffer[0])
+                    id_pulses = to_ts(id_pulses) #convert to TS
+                    got_enough(id_pulses,buffer)
+                    if match(id_pulses,buffer,self.jitter):
+                        id.pulses = to_pulse(id_pulses)
+                        id.timeStamp = id_pulses[0]
+                        data.append(id)
+                        found_id |= True
+
+                if found_id: break
+
+                buffer.pop(0) #else pop and search
 
         #once we've got the identifier, let's find as many symbols as we can
-        earliest, latest = next_symbol_area(data[-1],self.jitter)
-        while(1):
+            earliest, latest = next_symbol_area(data[-1],self.jitter)
+            while(1):
 
-            found_sym = False
-
-            sym_buffer = retrieve_sub_buffer(buffer,earliest,latest)
-            
-            if len(sym_buffer) < 5:
-                break
-
-            for sym in self.symbols:
-                sym_pulses, trash = self.sim.make([sym],sym_buffer[0])
-                sym_pulses = to_ts(sym_pulses)
-                got_enough(sym_pulses,sym_buffer)
-                if match(sym_pulses,sym_buffer,self.jitter):
-                    sym.pulses = to_pulse(sym_pulses)
-                    data.append(sym)
-                    found_sym |= True
-                    earliest, latest = next_symbol_area(data[-1],self.jitter)
-            
-            if not found_sym:
-                break
-                    
+                found_sym = False
                 
-        
+                sym_buffer = retrieve_sub_buffer(buffer,earliest,latest)
             
+                if len(sym_buffer) < 5:
+                    break
+
+                for sym in self.symbols:
+                    sym_pulses, trash = self.sim.make([sym],sym_buffer[0])
+                    sym_pulses = to_ts(sym_pulses)
+                    got_enough(sym_pulses,sym_buffer)
+                    if match(sym_pulses,sym_buffer,self.jitter):
+                        sym.pulses = to_pulse(sym_pulses)
+                        sym.timeStamp = sym_pulses[0]
+                        data.append(sym)
+                        found_sym |= True
+                        earliest, latest = next_symbol_area(data[-1],self.jitter)
             
+                if not found_sym:
+                    break
 
-
+            break
+                    
         return data
         
-
-
-        
-
-    
-            
-        
-            
-            
-        
-        
-
 
 
 if __name__ == '__main__':

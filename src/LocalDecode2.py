@@ -7,12 +7,12 @@ import os
 from copy import copy
 
 from Decoder2 import Decoder
-
+from FrameDecoder2 import FrameDecoder
 
 #globals
 SETTINGS = 'settings.cfg'
 SECTION = 'persistent'
-LAST = 'last'
+LAST = 'last' 
 #for holding the last timestamp
 last = None
 reset = False #for resetting the last value
@@ -48,14 +48,36 @@ for opt in optlist:
 
 #get the pulse
 new_pulses = []
+
+
 for arg in args:
         ts = mx.DateTime.DateTimeFrom(arg)
-        new_pulses.append(Pulse(timeStamp=ts))
+        new_pulses.append(ts)
+
+show_deltas = False
+last = None
+for p in new_pulses:
+    if last is not None:
+        if show_deltas:
+            print p - last
+    last = p
+        
 
 decoder = Decoder()
 
-data = decoder.decode(new_pulses)
-print data
+frame_decoder = FrameDecoder()
+
+new_symbols = decoder.decode(new_pulses)
+
+for ns in new_symbols:
+    print ns
+
+new_data = frame_decoder.decode(new_symbols)
+
+print new_data
+
+
+    
 
 
     
