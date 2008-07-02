@@ -29,27 +29,35 @@ def check_values(sym_a,sym_b):
             equal &= False
     return equal
 
-def to_ts(buffer):
+def to_ts(buf):
     """Turns a buffer of pulses into a buffer if timestamps"""
-    t_buffer = []
+    t_buf = []
     try:
-        for b in buffer:
-            t_buffer.append(b.timeStamp)
+        for b in buf:
+            t_buf.append(b.timeStamp)
     except AttributeError:
-        return buffer
-    return t_buffer
+        return buf
+    return t_buf
 
-def to_pulse(buffer):
+def to_pulse(buf):
     """Turns a buffer of timeStamps into a buffer of pulses"""
-    t_buffer = []
-    for b in buffer:
-        t_buffer.append(Pulse(timeStamp=b))
-    return t_buffer
+    t_buf = []
+    for b in buf:
+        t_buf.append(Pulse(timeStamp=b))
+    return t_buf
 
-def got_enough(little_buffer,big_buffer):
+def got_enough(little_buf,big_buf):
     """Check to see if we have enough data in the buffers."""
-    if len(big_buffer) < len(little_buffer):
+    if len(big_buf) < len(little_buf):
         raise NotEnoughPulses()
+
+def get_after(timeStamp,buf):
+    t_buf = []
+    for b in buf:
+        if b >= timeStamp:
+            t_buf.append(b)
+    return t_buf
+    
 
 def next_symbol_area(last_symbol,jitter):
     narrow,wide,symbol = last_symbol.firstPossiblePeakAfter()
@@ -63,12 +71,12 @@ def next_symbol_area(last_symbol,jitter):
 
     return earliest, latest
 
-def retrieve_sub_buffer(buffer,min,max):
-    t_buffer = []
-    for b in buffer:
+def retrieve_sub_buf(buf,min,max):
+    t_buf = []
+    for b in buf:
         if b >= min and b <= max:
-            t_buffer.append(b)
-    return t_buffer
+            t_buf.append(b)
+    return t_buf
             
 
     
@@ -76,13 +84,13 @@ def retrieve_sub_buffer(buffer,min,max):
     
     
 
-def match(symbol_buffer,data_buffer,jitter):
+def match(symbol_buf,data_buf,jitter):
     """Checks to see if two buffers of timestamps are approximately equal."""
     all_ok = True
-    for count in range(len(symbol_buffer)):
+    for count in range(len(symbol_buf)):
         close_enough = False
-        for data in data_buffer:
-            if abs(float( symbol_buffer[count] - data )) < jitter:
+        for data in data_buf:
+            if abs(float( symbol_buf[count] - data )) < jitter:
                 close_enough |= True
         all_ok &= close_enough
     return all_ok
@@ -99,9 +107,9 @@ class Decoder:
         self.sim.addSymbols(symbols=Symbols.generateSymbols(),identifiers=Symbols.generateIdentifiers())
         self.jitter = jitter
 
-    def decode(self,buffer):
+    def decode(self,buf):
         """Decodes a buffer of pulses or timestamps!"""
-        buffer = to_ts(buffer) #convert to timeStamps
+        buf = to_ts(buf) #convert to timeStamps
         #first find an identifer
         data = []
 
@@ -112,18 +120,19 @@ class Decoder:
 
             while(1):
                 for id in self.identifiers:
-                    id_pulses,trash = self.sim.make([id],buffer[0])
+                    id_pulses,trash = self.sim.make([id],buf[0])
                     id_pulses = to_ts(id_pulses) #convert to TS
-                    got_enough(id_pulses,buffer)
-                    if match(id_pulses,buffer,self.jitter):
+                    got_enough(id_pulses,buf)
+                    if match(id_pulses,buf,self.jitter):
                         id.pulses = to_pulse(id_pulses)
                         id.timeStamp = id_pulses[0]
                         data.append(id)
                         found_id |= True
 
                 if found_id: break
+                if not found_id: return
 
-                buffer.pop(0) #else pop and search
+                buf.pop(0) #else pop and search
 
         #once we've got the identifier, let's find as many symbols as we can
             earliest, latest = next_symbol_area(data[-1],self.jitter)
@@ -131,16 +140,16 @@ class Decoder:
 
                 found_sym = False
                 
-                sym_buffer = retrieve_sub_buffer(buffer,earliest,latest)
+                sym_buf = retrieve_sub_buf(buf,earliest,latest)
             
-                if len(sym_buffer) < 5:
+                if len(sym_buf) < 5:
                     break
 
                 for sym in self.symbols:
-                    sym_pulses, trash = self.sim.make([sym],sym_buffer[0])
+                    sym_pulses, trash = self.sim.make([sym],sym_buf[0])
                     sym_pulses = to_ts(sym_pulses)
-                    got_enough(sym_pulses,sym_buffer)
-                    if match(sym_pulses,sym_buffer,self.jitter):
+                    got_enough(sym_pulses,sym_buf)
+                    if match(sym_pulses,sym_buf,self.jitter):
                         sym.pulses = to_pulse(sym_pulses)
                         sym.timeStamp = sym_pulses[0]
                         data.append(sym)
@@ -150,8 +159,8 @@ class Decoder:
                 if not found_sym:
                     break
 
-            break
-                    
+            buf = get_after(latest,buf)
+
         return data
         
 

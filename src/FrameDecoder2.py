@@ -32,7 +32,9 @@ class FrameDecoder:
         
                     
         for frame in new_frames:
-            new_data.extend(match_frame(frame,self.frames))
+            d = match_frame(frame,self.frames)
+            if d is not None:
+                new_data.extend(d)
 
         return new_data
         

@@ -1,3 +1,4 @@
+print "Init"
 import sys
 import pdb
 import getopt
@@ -76,6 +77,7 @@ new_data = frame_decoder.decode(new_symbols)
 
 print new_data
 
+print "Complete!"
 
     
 
