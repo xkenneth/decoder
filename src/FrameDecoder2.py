@@ -2,6 +2,8 @@ from PyDrill.Decoders.TwoOfFive.FrameDecoder import FrameDecoder
 from PyDrill.Generation.TwoOfFive import Symbols, Frames
 
 def match_frame(data,frames):
+    if len(data) == 0:
+        return None
     for count in range(len(frames)):
         if data[0].value == count:
             if len(frames[count]) == len(data):

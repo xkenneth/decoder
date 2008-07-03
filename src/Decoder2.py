@@ -107,7 +107,7 @@ class Decoder:
         self.sim.addSymbols(symbols=Symbols.generateSymbols(),identifiers=Symbols.generateIdentifiers())
         self.jitter = jitter
 
-    def decode(self,buf):
+    def decode(self,buf,debug=False):
         """Decodes a buffer of pulses or timestamps!"""
         buf = to_ts(buf) #convert to timeStamps
         #first find an identifer
@@ -126,6 +126,8 @@ class Decoder:
                         id.pulses = to_pulse(id_pulses)
                         id.timeStamp = id_pulses[0]
                         data.append(id)
+                        if debug:
+                            print "Found ID"
                         found_id |= True
 
                 if found_id: 
@@ -140,12 +142,19 @@ class Decoder:
             
             while(1):
 
+                if debug:
+                    print "Searching for a symbol."
+                
                 found_sym = False
                 
                 sym_buf = retrieve_sub_buf(buf,earliest,latest)
             
                 if len(sym_buf) < 5:
+                    if debug:
+                        print "Not enough symbols in buffer!"
                     break
+                
+                if debug: print "%d symbols in buffer, continuing.." % len(sym_buf)
 
                 for sym in self.symbols:
                     sym_pulses, trash = self.sim.make([sym],sym_buf[0])
@@ -155,13 +164,20 @@ class Decoder:
                         sym.pulses = to_pulse(sym_pulses)
                         sym.timeStamp = sym_pulses[0]
                         data.append(sym)
+                        if debug:
+                            print "Found Symbol!"
                         found_sym |= True
                         earliest, latest = next_symbol_area(data[-1],self.jitter)
             
                 if not found_sym:
+                    if debug: print "Symbol not found."
                     break
 
+            last_buf = buf
             buf = get_after(earliest,buf)
+            if last_buf == buf and not found_sym:
+                return data
+
             if len(buf) < 5:
                 return data
 

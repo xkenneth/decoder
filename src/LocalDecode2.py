@@ -68,7 +68,7 @@ decoder = Decoder()
 
 frame_decoder = FrameDecoder()
 
-new_symbols = decoder.decode(new_pulses)
+new_symbols = decoder.decode(new_pulses,debug=debug)
 
 for ns in new_symbols:
     print ns
