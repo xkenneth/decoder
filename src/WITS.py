@@ -110,8 +110,10 @@ try:
         rop_data_item = DataItem(identifier=rop_identifier,value='28000')
         
 
+        #depth_data_record = DataRecord([bit_depth_data_item,hole_depth_data_item,rop_data_item])
         depth_data_record = DataRecord([bit_depth_data_item,hole_depth_data_item,rop_data_item])
-
+        print depth_data_record
+        print "!!!!!"
         trans.write(depth_data_record)
 
         #sleep

@@ -129,13 +129,16 @@ class Decoder:
                         data.append(id)
                         found_id |= True
 
-                if found_id: break
-                if not found_id: return
+                if found_id: 
+                    break
+                if not found_id:
+                    return data
 
                 buf.pop(0) #else pop and search
 
         #once we've got the identifier, let's find as many symbols as we can
             earliest, latest = next_symbol_area(data[-1],self.jitter)
+            
             while(1):
 
                 found_sym = False
@@ -157,9 +160,12 @@ class Decoder:
                         earliest, latest = next_symbol_area(data[-1],self.jitter)
             
                 if not found_sym:
+                    print "I did not find a symbol."
                     break
 
-            buf = get_after(latest,buf)
+            buf = get_after(earliest,buf)
+            if len(buf) < 5:
+                return data
 
         return data
         
@@ -176,6 +182,17 @@ if __name__ == '__main__':
             self.sim.addSymbols(symbols=Symbols.generateSymbols(),identifiers=Symbols.generateIdentifiers())
 
     class DecoderTests(DecoderTestCase):
+        def testDoubleSymbol(self):
+            pattern = []
+            for sym in self.symbols:
+                pattern.extend([self.identifiers[0],sym])
+
+            pulses = self.sim.make(pattern,mx.DateTime.now())
+            pulses = pulses[0]
+            data = self.decoder.decode(pulses)
+
+            self.failIf(not(check_values(pattern,data)))
+
         def testFindIdentifier(self):
             for id in self.identifiers:
                 pulses = self.sim.make([id],mx.DateTime.now())
@@ -185,15 +202,9 @@ if __name__ == '__main__':
                 if data[0] != id:
                     self.fail()
 
-                n_pulses.insert(0,Pulse(n_pulses[0].timeStamp-toDelta(5)))
-                data = self.decoder.decode(n_pulses)
-                if data[0] != id:
-                    self.fail()
-
         def testSingleSymbolPatterns(self):
             for id in self.identifiers:
                 for sym in self.symbols:
-                    print '.',
                     pattern = [id,sym]
             
                     pulses, trash = self.sim.make(pattern,mx.DateTime.now())
