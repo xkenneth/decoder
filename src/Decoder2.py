@@ -114,7 +114,6 @@ class Decoder:
         data = []
 
         found_id = False
-        
         #while we still have data....
         while(1):
 
@@ -131,8 +130,8 @@ class Decoder:
 
                 if found_id: 
                     break
-                if not found_id:
-                    return data
+                #if not found_id:
+                #    return data
 
                 buf.pop(0) #else pop and search
 
@@ -160,7 +159,6 @@ class Decoder:
                         earliest, latest = next_symbol_area(data[-1],self.jitter)
             
                 if not found_sym:
-                    print "I did not find a symbol."
                     break
 
             buf = get_after(earliest,buf)

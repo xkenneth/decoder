@@ -28,7 +28,7 @@ jitter = 10
 
 #parse opts
 optlist, args = getopt.getopt(sys.argv[1:],'',['reset','clear','debug','print-keys','show-deltas','jitter=','csv'])
-
+print optlist
 for opt in optlist:
     if opt[0] == '--reset':
         reset = True
@@ -47,6 +47,7 @@ for opt in optlist:
         csv = True
 
 
+
 #get the pulse
 new_pulses = []
 
@@ -55,7 +56,6 @@ for arg in args:
         ts = mx.DateTime.DateTimeFrom(arg)
         new_pulses.append(ts)
 
-show_deltas = False
 last = None
 for p in new_pulses:
     if last is not None:
