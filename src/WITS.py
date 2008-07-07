@@ -112,8 +112,7 @@ try:
 
         #depth_data_record = DataRecord([bit_depth_data_item,hole_depth_data_item,rop_data_item])
         depth_data_record = DataRecord([bit_depth_data_item,hole_depth_data_item,rop_data_item])
-        print depth_data_record
-        print "!!!!!"
+        print depth_data_record.serialize()
         trans.write(depth_data_record)
 
         #sleep
@@ -164,3 +163,4 @@ except KeyboardInterrupt:
         
 # except KeyboardInterrupt:
 #     pass
+
