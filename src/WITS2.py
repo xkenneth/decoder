@@ -111,6 +111,8 @@ while(1): #FOREVER!!!!!!
     except ValueError:
         new_inc = inc
         inclination_buffer.append(new_inc)
+    except KeyError:
+        pass
         
     if new_inc is not None:
         print "Inc Update: ", new_inc
@@ -129,6 +131,8 @@ while(1): #FOREVER!!!!!!
     except ValueError:
         new_azu = azu
         azimuth_buffer.append(new_azu)
+    except KeyError:
+        pass
 
     if new_azu is not None:
         azimuth_value_string = '%04.1f' % (new_azu[0].value*360.0/10000.0)
@@ -149,6 +153,8 @@ while(1): #FOREVER!!!!!!
     except ValueError:
         new_gr = gamma_ray
         gamma_ray_buffer.append(new_gr)
+    except KeyError:
+        pass
         
     if new_gr is not None:
         print "GR Update:",new_gr
