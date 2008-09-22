@@ -7,8 +7,8 @@ import ConfigParser
 import os
 from copy import copy
 
-from Decoder2 import Decoder
-from FrameDecoder2 import FrameDecoder
+from decoder import Decoder
+from frameDecoder import FrameDecoder
 
 #globals
 SETTINGS = 'settings.cfg'
