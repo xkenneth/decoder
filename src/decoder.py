@@ -220,6 +220,8 @@ if __name__ == '__main__':
             for id in self.identifiers:
                 for sym in self.symbols:
                     pattern = [id,sym]
+
+                    print pattern
             
                     pulses, trash = self.sim.make(pattern,mx.DateTime.now())
 
