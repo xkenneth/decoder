@@ -1,4 +1,3 @@
-print "Init"
 import sys
 import pdb
 import getopt
@@ -27,8 +26,7 @@ print_keys = False
 jitter = 10
 
 #parse opts
-optlist, args = getopt.getopt(sys.argv[1:],'',['reset','clear','debug','print-keys','show-deltas','jitter=','csv'])
-print optlist
+optlist, args = getopt.getopt(sys.argv[1:],'',['reset','clear','debug','print-keys','show-deltas','jitter=','host=','csv'])
 for opt in optlist:
     if opt[0] == '--reset':
         reset = True
@@ -70,15 +68,13 @@ frame_decoder = FrameDecoder()
 
 new_symbols = decoder.decode(new_pulses,debug=debug)
 
-for ns in new_symbols:
-    print ns
+#for ns in new_symbols:
+#    print ns
 
 new_data = frame_decoder.decode(new_symbols)
 
-print new_data
-
-print "Complete!"
-
+for d in new_data:
+    print d.name,"=",d.value,"@",d.timeStamp
     
 
 
