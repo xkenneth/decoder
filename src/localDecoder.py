@@ -65,14 +65,7 @@ for arg in args:
     microsecond = int(microsecond)
     
 
-    print month, day, year, hour, minute, second, microsecond
     new_pulses.append(datetime(year,month,day,hour,minute,second,microsecond))
-
-for new in new_pulses:
-    print new
-
-import sys
-sys.exit()
 
 last = None
 for p in new_pulses:
