@@ -120,8 +120,12 @@ class Decoder:
         self.jitter = jitter
 
     def decode(self,buf,debug=False):
+
         """Decodes a buffer of pulses or timestamps!"""
-        buf = to_ts(buf) #convert to timeStamps
+        
+        #no longer necessary
+        #buf = to_ts(buf) #convert to timeStamps
+
         #first find an identifer
         data = []
 
@@ -131,12 +135,14 @@ class Decoder:
 
             while(1):
                 for id in self.identifiers:
+                    #create a perfect identifier
                     id_pulses,trash = self.sim.make([id],buf[0])
                     id_pulses = to_ts(id_pulses) #convert to TS
                     got_enough(id_pulses,buf)
                     if match(id_pulses,buf,self.jitter):
                         id.pulses = to_pulse(id_pulses)
                         id.timeStamp = id_pulses[0]
+                        print id
                         data.append(id)
                         if debug:
                             print "Found ID"
@@ -175,6 +181,7 @@ class Decoder:
                     if match(sym_pulses,sym_buf,self.jitter):
                         sym.pulses = to_pulse(sym_pulses)
                         sym.timeStamp = sym_pulses[0]
+                        print sym
                         data.append(sym)
                         if debug:
                             print "Found Symbol!"
