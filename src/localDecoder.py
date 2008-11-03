@@ -1,10 +1,10 @@
 import sys
 import pdb
 import getopt
-import mx.DateTime
 import ConfigParser
 import os
 from copy import copy
+from datetime import datetime
 
 from decoder import Decoder
 from frameDecoder import FrameDecoder
@@ -49,10 +49,30 @@ for opt in optlist:
 #get the pulse
 new_pulses = []
 
+import re
 
 for arg in args:
-        ts = mx.DateTime.DateTimeFrom(arg)
-        new_pulses.append(ts)
+    ts = None
+    month = int(arg[0:2])
+    day = int(arg[3:5])
+    year = int(arg[6:10])
+    
+    hour = int(arg[10:12])
+    minute = int(arg[13:15])
+    second = int(arg[16:18])
+    microsecond = arg[19:]
+    microsecond += (6-len(microsecond))*'0'
+    microsecond = int(microsecond)
+    
+
+    print month, day, year, hour, minute, second, microsecond
+    new_pulses.append(datetime(year,month,day,hour,minute,second,microsecond))
+
+for new in new_pulses:
+    print new
+
+import sys
+sys.exit()
 
 last = None
 for p in new_pulses:

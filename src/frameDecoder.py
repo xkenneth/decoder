@@ -1,5 +1,5 @@
-import pdb
-from PyDrill.Generation.TwoOfFive import Symbols, Frames
+from PyDrill.symbol_generation import generateSymbols, generateIdentifiers
+from PyDrill.frame_generation import generate
 
 def match_frame(data,frames):
     if len(data) == 0:
@@ -16,9 +16,9 @@ def match_frame(data,frames):
 
 class FrameDecoder:
     def __init__(self):
-        self.frames = Frames.generate()
-        self.identifiers = Symbols.generateIdentifiers()
-        self.symbols = Symbols.generateSymbols()
+        self.frames = generate()
+        self.identifiers = generateIdentifiers()
+        self.symbols = generateSymbols()
 
     def decode(self,data):
         """;)"""
@@ -50,15 +50,14 @@ if __name__ == '__main__':
 
     class FrameDecoderTests(unittest.TestCase):
         def setUp(self):
-            self.frames = Frames.generate()
-            self.symbols = Symbols.generateSymbols()
+            self.frames = generate()
+            self.symbols = generateSymbols()
         def testOne(self):
             for frame in self.frames:
                 data = []
                 for frame_length in range(len(frame)):
                     data.append(self.symbols[random.randint(0,99)])
                 frame.symbols = data
-                pdb.set_trace()
             
                 
 
