@@ -1,16 +1,25 @@
 import unittest
 
-import mx.DateTime
-import pdb
+from PyDrill.helper import smart_datetime as datetime
+from PyDrill.helper import smart_timedelta as timedelta
+
 from copy import copy
 
-from PyDrill.Generation.TwoOfFive import Symbols
-from PyDrill.Simulation import TwoOfFiveSimulator
-from PyDrill.Objects.Pulse import Pulse
+#from PyDrill.Generation.TwoOfFive import Symbols
+from PyDrill.symbol_generation import generateSymbols, generateIdentifiers
+
+from PyDrill.simulator import TwoOfFiveSimulator
+
+from PyDrill.objects import pulse
+
+import pdb
 
 modulus = 0.5
 
-toDelta = mx.DateTime.DateTimeDeltaFrom
+def to_float(dt):
+    return float(dt.hour*60*60) + float(dt.minute*60) + float(dt.second) + float(dt.microsecond/1000000.0)
+
+toDelta = lambda t: timedelta(0,t)
 
 class DecoderException(Exception):
     def __init__(self,message='',data=None):
@@ -18,7 +27,7 @@ class DecoderException(Exception):
     def __str__(self):
         return self.message + str(data)
 
-class NotEnoughPulses(DecoderException):
+class NotEnoughpulses(DecoderException):
     """Not enough pulses remain to decode."""
 
 #Helper Functions!
@@ -43,7 +52,7 @@ def to_pulse(buf):
     """Turns a buffer of timeStamps into a buffer of pulses"""
     t_buf = []
     for b in buf:
-        t_buf.append(Pulse(timeStamp=b))
+        t_buf.append(pulse(timeStamp=b))
     return t_buf
 
 def got_enough(little_buf,big_buf):
@@ -90,7 +99,10 @@ def match(symbol_buf,data_buf,jitter):
     for count in range(len(symbol_buf)):
         close_enough = False
         for data in data_buf:
-            if abs(float( symbol_buf[count] - data )) < jitter:
+
+            t = to_float(symbol_buf[count]) - to_float(data)
+            
+            if abs(float(t)) < jitter:
                 close_enough |= True
         all_ok &= close_enough
     return all_ok
@@ -101,10 +113,10 @@ def match(symbol_buf,data_buf,jitter):
 
 class Decoder:
     def __init__(self,jitter=1.0/10.0):
-        self.symbols = Symbols.generateSymbols()
-        self.identifiers = Symbols.generateIdentifiers()
-        self.sim = TwoOfFiveSimulator.TwoOfFiveSimulator()
-        self.sim.addSymbols(symbols=Symbols.generateSymbols(),identifiers=Symbols.generateIdentifiers())
+        self.symbols = generateSymbols()
+        self.identifiers = generateIdentifiers()
+        self.sim = TwoOfFiveSimulator()
+        self.sim.addSymbols(symbols=generateSymbols(),identifiers=generateIdentifiers())
         self.jitter = jitter
 
     def decode(self,buf,debug=False):
@@ -186,14 +198,14 @@ class Decoder:
 
 
 if __name__ == '__main__':
-    
+
     class DecoderTestCase(unittest.TestCase):
         def setUp(self):
-            self.symbols = Symbols.generateSymbols()
-            self.identifiers = Symbols.generateIdentifiers()
+            self.symbols = generateSymbols()
+            self.identifiers = generateIdentifiers()
             self.decoder = Decoder()
-            self.sim = TwoOfFiveSimulator.TwoOfFiveSimulator()
-            self.sim.addSymbols(symbols=Symbols.generateSymbols(),identifiers=Symbols.generateIdentifiers())
+            self.sim = TwoOfFiveSimulator()
+            self.sim.addSymbols(symbols=generateSymbols(),identifiers=generateIdentifiers())
 
     class DecoderTests(DecoderTestCase):
         def testDoubleSymbol(self):
@@ -201,7 +213,7 @@ if __name__ == '__main__':
             for sym in self.symbols:
                 pattern.extend([self.identifiers[0],sym])
 
-            pulses = self.sim.make(pattern,mx.DateTime.now())
+            pulses = self.sim.make(pattern,datetime.now())
             pulses = pulses[0]
             data = self.decoder.decode(pulses)
 
@@ -209,11 +221,11 @@ if __name__ == '__main__':
 
         def testFindIdentifier(self):
             for id in self.identifiers:
-                pulses = self.sim.make([id],mx.DateTime.now())
+                pulses = self.sim.make([id],datetime.now())
                 pulses = pulses[0]
                 n_pulses = copy(pulses)
                 data = self.decoder.decode(pulses)
-                if data[0] != id:
+                if data[0].value != id.value:
                     self.fail()
 
         def testSingleSymbolPatterns(self):
@@ -223,7 +235,7 @@ if __name__ == '__main__':
 
                     print pattern
             
-                    pulses, trash = self.sim.make(pattern,mx.DateTime.now())
+                    pulses, trash = self.sim.make(pattern,datetime.now())
 
                     data = self.decoder.decode(pulses)
                     
@@ -237,19 +249,21 @@ if __name__ == '__main__':
                 for sym1 in self.symbols:
                     for sym2 in self.symbols:
                         for sym3 in self.symbols:
+                            print id.value, sym1.value, sym2.value, sym3.value
                             for sym4 in self.symbols:
                                 for sym5 in self.symbols:
-                                    t = mx.DateTime.now()
+                                    
+                                    t = datetime.now()
                                     
                                     pattern = [id,sym1,sym2,sym3,sym4,sym5]
 
-                                    pulses, trash = self.sim.make(pattern,mx.DateTime.now())
+                                    pulses, trash = self.sim.make(pattern,datetime.now())
                                     
                                     data = self.decoder.decode(pulses)
                                     
                                     self.failUnless(check_values(pattern,data))
                                     
-                                    print mx.DateTime.now() - t
+                                    #print datetime.now() - t
 
                             
                         
