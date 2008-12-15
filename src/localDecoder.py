@@ -73,7 +73,7 @@ for p in new_pulses:
         if show_deltas:
             print p - last
     last = p
-        
+    
 
 decoder = Decoder()
 
