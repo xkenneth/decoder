@@ -107,10 +107,6 @@ def match(symbol_buf,data_buf,jitter):
         all_ok &= close_enough
     return all_ok
 
-
-        
-    
-
 class Decoder:
     def __init__(self,jitter=1.0/10.0):
         self.symbols = generateSymbols()
@@ -120,12 +116,10 @@ class Decoder:
         self.jitter = jitter
 
     def decode(self,buf,debug=False):
+        """Decodes a buffer of timestamps. Each timestamp represents when a pulse occured.
+        buf - iterable of timestamps"""
 
-        """Decodes a buffer of pulses or timestamps!"""
         
-        #no longer necessary
-        #buf = to_ts(buf) #convert to timeStamps
-
         #first find an identifer
         data = []
 
@@ -206,6 +200,12 @@ class Decoder:
 
 if __name__ == '__main__':
 
+    def get_ts(pulses):
+        ts = []
+        for p in pulses:
+            ts.append(p.timeStamp)
+        return ts
+
     class DecoderTestCase(unittest.TestCase):
         def setUp(self):
             self.symbols = generateSymbols()
@@ -222,7 +222,7 @@ if __name__ == '__main__':
 
             pulses = self.sim.make(pattern,datetime.now())
             pulses = pulses[0]
-            data = self.decoder.decode(pulses)
+            data = self.decoder.decode(get_ts(pulses))
 
             self.failIf(not(check_values(pattern,data)))
 
@@ -231,7 +231,7 @@ if __name__ == '__main__':
                 pulses = self.sim.make([id],datetime.now())
                 pulses = pulses[0]
                 n_pulses = copy(pulses)
-                data = self.decoder.decode(pulses)
+                data = self.decoder.decode(get_ts(pulses))
                 if data[0].value != id.value:
                     self.fail()
 
@@ -244,7 +244,7 @@ if __name__ == '__main__':
             
                     pulses, trash = self.sim.make(pattern,datetime.now())
 
-                    data = self.decoder.decode(pulses)
+                    data = self.decoder.decode(get_ts(pulses))
                     
                     self.failUnless(check_values(pattern,data))
 
@@ -266,7 +266,7 @@ if __name__ == '__main__':
 
                                     pulses, trash = self.sim.make(pattern,datetime.now())
                                     
-                                    data = self.decoder.decode(pulses)
+                                    data = self.decoder.decode(get_ts(pulses))
                                     
                                     self.failUnless(check_values(pattern,data))
                                     
