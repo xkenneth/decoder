@@ -136,7 +136,6 @@ class Decoder:
                     if match(id_pulses,buf,self.jitter):
                         id.pulses = to_pulse(id_pulses)
                         id.timeStamp = id_pulses[0]
-                        print id
                         data.append(id)
                         if debug:
                             print "Found ID"
@@ -175,7 +174,6 @@ class Decoder:
                     if match(sym_pulses,sym_buf,self.jitter):
                         sym.pulses = to_pulse(sym_pulses)
                         sym.timeStamp = sym_pulses[0]
-                        print sym
                         data.append(sym)
                         if debug:
                             print "Found Symbol!"
