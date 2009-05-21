@@ -10,16 +10,15 @@ class pydrill_object:
         raise Exception('No!')
 
 class tool_data(pydrill_object):
-    def __init__(self,name,value=None,timeStamp=None,slowData=None):
+    def __init__(self,name,value=None,time_stamp=None,slowData=None):
         self.name = name
         self.fileKey = name
         self.value = value
-        self.timeStamp = timeStamp
+        self.time_stamp = time_stamp
         self.slowData = slowData
-
 		
     def __copy__(self):
-        return tool_data(self.name,value=self.value,timeStamp=self.timeStamp,slowData=self.slowData)
+        return tool_data(self.name,value=self.value,time_stamp=self.time_stamp,slowData=self.slowData)
 
     def __repr__(self):
         t = "ToolData: "
@@ -34,7 +33,7 @@ class tool_data(pydrill_object):
             pass
         
         try: 
-            t+= "T: " + str(self.timeStamp) + " "
+            t+= "T: " + str(self.time_stamp) + " "
         except AttributeError:
             pass
         
@@ -49,10 +48,10 @@ class tool_data(pydrill_object):
 
 class symbol(pydrill_object):
     """This class represents a basic chirp"""
-    def __init__(self,value=None,bars=None,timeStamp=None,pulses=None):
+    def __init__(self,value=None,bars=None,time_stamp=None,pulses=None):
 
         self.value = value
-        self.timeStamp = timeStamp
+        self.time_stamp = time_stamp
         
         self.bars = []
         if bars:
@@ -67,7 +66,7 @@ class symbol(pydrill_object):
         
 			 
     def __copy__(self):
-        return symbol(value=self.value,bars=self.bars,timeStamp=self.timeStamp,pulses=self.pulses)
+        return symbol(value=self.value,bars=self.bars,time_stamp=self.time_stamp,pulses=self.pulses)
 	 
 	 #functions
 
@@ -76,8 +75,8 @@ class symbol(pydrill_object):
 # 		 if self.value is not None:
 # 			 writer.simpleElement(u'Value',content=unicode(self.value))
 
-# 		 if self.timeStamp!=None:
-# 			 writer.simpleElement(u'TimeStamp',content=unicode(self.timeStamp))
+# 		 if self.time_stamp!=None:
+# 			 writer.simpleElement(u'TimeStamp',content=unicode(self.time_stamp))
 		 
 # 		 if self.bars is not None:
 			 
@@ -113,7 +112,7 @@ class symbol(pydrill_object):
                 else:
                     rolling += self.narrow_mod_count
 
-        return self.pulses[-1].timeStamp - mx.DateTime.DateTimeDeltaFrom(self.calcModulusTimeBase()*rolling)
+        return self.pulses[-1].time_stamp - mx.DateTime.DateTimeDeltaFrom(self.calcModulusTimeBase()*rolling)
 
     def firstPossiblePeakAfter(self,debug=False):
         """Returns the count in modulus from the last peak of a symbol until the time where a new peak can occur."""
@@ -213,7 +212,7 @@ class symbol(pydrill_object):
         last = None
         for d in self.pulses:
             if last is not None:
-                deltas.append(float(d.timeStamp-last.timeStamp))
+                deltas.append(float(d.time_stamp-last.time_stamp))
             last = d
 
         bases = []
@@ -288,29 +287,13 @@ class symbol(pydrill_object):
 
         return deltas
 			 
-			 
-
-
     def __repr__(self):
-        t =  "Symbol"
-        
-        if self.value is not None:
-            t += " val: " + unicode(self.value)
-            t += ' '
-		 
-        if self.bars is not None:
-            t += " Length: " + unicode(self.__len__())
-            t += ' '
-
-        if self.timeStamp is not None:
-            t += "TimeStamp: " + str(self.timeStamp)
-
-        return t
+        return '<Symbol(%d:%d) @ %s>' % (self.value,self.__len__(),self.time_stamp)
 
 	 #called by the str(obj) function
 class bar(pydrill_object):
-    def __init__(self,peak,wide=False,timeStamp=None):
-        self.peak,self.wide,self.timeStamp = peak,wide,timeStamp
+    def __init__(self,peak,wide=False,time_stamp=None):
+        self.peak,self.wide,self.time_stamp = peak,wide,time_stamp
         
     def __repr__(self):
         t = ''
@@ -335,7 +318,7 @@ class sub_frame(pydrill_object):
 	"""The class represents a sub-frame."""
 	
      #CONSTRUCTOR
-	def __init__(self,blocks=None,chirps=None,name=None,xml=None,timeStamp=None):
+	def __init__(self,blocks=None,chirps=None,name=None,xml=None,time_stamp=None):
 		"""blocks - a list of blocks"""
 			 #switch for initialization
 
@@ -343,7 +326,7 @@ class sub_frame(pydrill_object):
 		if blocks!=None:
 			self.blocks.extend(blocks)
 		self.name = name
-		self.timeStamp = timeStamp
+		self.time_stamp = time_stamp
 
 		if (xml!=None):
 			self.loadFromXML(xml)
@@ -353,7 +336,7 @@ class sub_frame(pydrill_object):
 		newBlocks = []
 		for b in self.blocks:
 			newBlocks.append(copy(b))
-		return sub_frame(blocks=newBlocks,name=self.name,timeStamp=self.timeStamp)
+		return sub_frame(blocks=newBlocks,name=self.name,time_stamp=self.time_stamp)
 
 	def __len__(self):
 		return len(self.blocks)
@@ -368,9 +351,9 @@ class sub_frame(pydrill_object):
 			pass
 		
 		try:
-			self.timeStamp
+			self.time_stamp
 			t += "time: "
-			t += str(self.timeStamp)
+			t += str(self.time_stamp)
 			t += "\n"
 
 		except AttributeError:
@@ -405,7 +388,7 @@ class sub_frame(pydrill_object):
 			
 			
 		for d in data:
-			d.timeStamp = self.timeStamp
+			d.time_stamp = self.time_stamp
 		return data
 		
 	def assimilate(self,other):
@@ -418,7 +401,7 @@ class sub_frame(pydrill_object):
 		
 class frame(pydrill_object):
     #basic initialization of the frame
-    def __init__(self,header=None,subFrames=None,checkSum=None,xml=None,debug=False,timeStamp=None):
+    def __init__(self,header=None,subFrames=None,checkSum=None,xml=None,debug=False,time_stamp=None):
         """Basic constructor for the Frame Class"""        
 	
 	self.header = header
@@ -430,7 +413,7 @@ class frame(pydrill_object):
 
 	self.checkSum = checkSum
 
-	self.timeStamp = timeStamp
+	self.time_stamp = time_stamp
 	
 	self.debug = debug
 
@@ -446,7 +429,7 @@ class frame(pydrill_object):
 
                     
             
-	    return Frame(header=copy(self.header),subFrames=newSubFrames,checkSum=copy(self.checkSum),timeStamp=self.timeStamp)
+	    return Frame(header=copy(self.header),subFrames=newSubFrames,checkSum=copy(self.checkSum),time_stamp=self.time_stamp)
 
     def decompose(self):
 	    data = []
@@ -518,8 +501,8 @@ class frame(pydrill_object):
 	    
 	    t =  "Frame "
 	    
-	    if self.timeStamp!=None:
-		    t += 'TimeStamp: ' + str(self.timeStamp) + ' '
+	    if self.time_stamp!=None:
+		    t += 'TimeStamp: ' + str(self.time_stamp) + ' '
 		
             if self.header!=None:
                 t += "Header: " + str(self.header) + " "
@@ -542,12 +525,12 @@ class frame(pydrill_object):
 class chirp(pydrill_object):
 	 """This class represents a basic chirp"""
 	 #constructor
-	 def __init__(self,value=None,deltas=None,xml=None,chirpLength=None,timeStamp=None,pulses=None,peaks=None,valleys=None):
+	 def __init__(self,value=None,deltas=None,xml=None,chirpLength=None,time_stamp=None,pulses=None,peaks=None,valleys=None):
 		 """Takes the place of a default constructor. Arguments must either be the value of the chirp and the associated deltas, or an 4Suite XML Element"""
 
 		 self.value = value
 		 self.chirpLength = chirpLength
-		 self.timeStamp = timeStamp
+		 self.time_stamp = time_stamp
 		 self.pulses = pulses
 		 self.deltas = deltas
 		 self.peaks = None
@@ -576,7 +559,7 @@ class chirp(pydrill_object):
                      self.pulses.extend(pulses)
 		 
 	 def __copy__(self):
-		 return Chirp(value=self.value,deltas=self.deltas,chirpLength=self.chirpLength,timeStamp=self.timeStamp,pulses=self.pulses)
+		 return Chirp(value=self.value,deltas=self.deltas,chirpLength=self.chirpLength,time_stamp=self.time_stamp,pulses=self.pulses)
 	 
 	 #called by the repr(obj) function
 	 def __repr__(self):
@@ -590,8 +573,8 @@ class chirp(pydrill_object):
 			 t += " len(d): " + str(len(self.deltas))
 			 t += ' '
 		 		
-		 if self.timeStamp!=None:
-			 t += "time: " + str(self.timeStamp)
+		 if self.time_stamp!=None:
+			 t += "time: " + str(self.time_stamp)
 
 		 if self.value!=None:
 			 t += " val: " + unicode(self.value)
@@ -613,27 +596,27 @@ class chirp(pydrill_object):
 class element(pydrill_object):
 	#BASIC CONSTRUCTOR
 	"""This class represents a particular element of a frame, such as a header,checkSum,etc"""
-	def __init__(self,chirpLength=None,identifier=None,value=None,xml=None,timeStamp=None):
+	def __init__(self,chirpLength=None,identifier=None,value=None,xml=None,time_stamp=None):
 		"""Constructor for the class"""
 		
 		self.chirpLength = chirpLength
 		self.identifier = identifier
 		self.value = value
-		self.timeStamp = timeStamp
+		self.time_stamp = time_stamp
 
 		#try and load from the XML tag
 		if (xml!=None):
 			self.loadFromXML(xml)
 
 	def __copy__(self):
-		return element(chirpLength=self.chirpLength,identifier=self.identifier,value=self.value,timeStamp=self.timeStamp)
+		return element(chirpLength=self.chirpLength,identifier=self.identifier,value=self.value,time_stamp=self.time_stamp)
 
 	def loadFromChirp(self,chirp,identifier=None):
 		self.chirpLength = len(chirp)
 		self.identifier = identifier
 		self.value = chirp.value
 		try:
-			self.timeStamp = chirp.timeStamp
+			self.time_stamp = chirp.time_stamp
 		except AttributeError:
 			pass
 
@@ -667,41 +650,39 @@ class element(pydrill_object):
                 return chirp(value=value,chirpLength=self.chirpLength)
 
 class block(pydrill_object):
-	#BASIC CONSTRUCTOR
-	def __init__(self,chirpLengths=None,name=None,timeStamp=None,xml=None,value=None,symbolLength=None):
+	"""Blocks are used to represent sections within a frame."""
+	def __init__(self,name=None,value=None,time_stamp=None,symbol_length=None):
 		"""chirpLengths: a list of integers representing the lengths of the chirps in the frame"""
 		
-		self.chirpLengths = []
-		if chirpLengths!=None:
-			self.chirpLengths.extend(chirpLengths)
 		self.name = name
-		self.timeStamp = timeStamp
+		self.time_stamp = time_stamp
+                
 		self.value = value
-		self.symbolLength = symbolLength
-		
-		
-		if (xml!=None):
-			self.loadFromXML(xml)
+                #the number of symbols long the block is
+		self.symbol_length = symbol_length 
+
+        def __repr__(self):
+            return '<Block(%s) value:%s len:%s @ %s>' % (self.name,self.value,self.symbol_length,self.time_stamp)
 
         def __len__(self):
 		"""Return the length of the block in symbols"""
-		return self.symbolLength
+		return self.symbol_length
 
 	def __copy__(self):
-		return Block(chirpLengths=self.chirpLengths,name=self.name,timeStamp=self.timeStamp,symbolLength=self.symbolLength)
+		return Block(chirpLengths=self.chirpLengths,name=self.name,time_stamp=self.time_stamp,symbol_length=self.symbol_length)
 
 	def decompose(self):
             if self.name != None:
                 slowData=False
-                return tool_data(self.name,self.value,self.timeStamp,slowData)
+                return tool_data(self.name,self.value,self.time_stamp,slowData)
             
 	def sim(self):
             chirps = []
             for i in self.chirpLengths:
                 chirps.append(chirp(chirpLength=i))
 
-            if self.symbolLength is not None:
-                for s in range(self.symbolLength):
+            if self.symbol_length is not None:
+                for s in range(self.symbol_length):
                     chirps.append(chirp())
 
             return chirps
@@ -713,50 +694,23 @@ class symbol_frame(pydrill_object):
                  blocks=None,
                  symbols=None,
                  ):
+        
         """Initialize a frame
         identifier - a symbol that acts as an identifier for the frame
         blocks - the individual data blocks
         """
+        
         self.identifier = identifier
-        
-        self.set_blocks(blocks)
-        self.set_symbols(symbols)
-        
-    #getters and setters - for those that need it
-
-    def set_blocks(self,blocks):
-        """To set the blocks"""
-        self._blocks = []
-        if blocks is not None:
-            for block in blocks:
-                self._blocks.append(block)
-
-    def get_blocks(self):
-        return self._blocks
-
-    def set_symbols(self,symbols):
-        """Used to make sure the symbols are of the right type of list"""
-        self._symbols = []
-
-        if symbols is not None:
-            for symbol in symbols:
-                self._symbols.append(symbol)
-                
-    def get_symbols(self):
-        return self._symbols
-
-    blocks = property(get_blocks,get_symbols)
-    symbols = property(get_symbols,set_symbols)
-    
+        self.blocks = blocks
+        self.symbols = symbols
         
     def __copy__(self):
         """Returns a fresh copy of the object"""
-        return SymbolFrame(identifier=self.identifier,
+        return symbol_frame(identifier=self.identifier,
                            blocks=self.blocks,
                            symbols=self.symbols,
                            )
                            
-
     def sim(self):
         """Decompose a frame into it's smaller elements"""
         
@@ -778,7 +732,7 @@ class symbol_frame(pydrill_object):
                     #data[block.name] = ( data[block.name] * 100 ) + self.symbols[count].value
                     data[block.name].value = ( data[block.name].value * 100 ) + self.symbols[count].value
                 except KeyError:
-                    data[block.name] = tool_data(block.name,value=self.symbols[count].value,timeStamp=self.symbols[count].timeStamp)
+                    data[block.name] = tool_data(block.name,value=self.symbols[count].value,time_stamp=self.symbols[count].time_stamp)
                 count += 1
 
         #print data
@@ -792,7 +746,7 @@ class symbol_frame(pydrill_object):
 
 
     def __len__(self):
-        """Return the length of the frame in symbols"""
+        """Return the length of the frame in symbols including the frame ID but not the sync."""
         count = 1
         for block in self.blocks:
             count += len(block)
