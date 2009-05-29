@@ -1,5 +1,6 @@
-import unittest
 import datetime
+import logging
+
 
 from copy import copy
 
@@ -21,7 +22,7 @@ toDelta = lambda t: timedelta(0,t)
 system_symbols = generateSymbols()
 system_identifiers = generateIdentifiers()
 
-def make(system_symbols,symbols,timeStamp,modulus=0.5,ratio=2.0,debug=False):
+def make(system_symbols,symbols,time_stamp,modulus=0.5,ratio=2.0,debug=True):
         newSymbols = [] 
 
         for s in symbols: #create random symbols if their values aren't defined
@@ -53,8 +54,7 @@ def make(system_symbols,symbols,timeStamp,modulus=0.5,ratio=2.0,debug=False):
                     first_found = True
                     first = timedelta(0,time/ratio)
 
-                #pdb.set_trace()
-                pulses.append(timeStamp+timedelta(0,time/ratio))
+                pulses.append(time_stamp+timedelta(0,time/ratio))
 
             if first_found is False and first is not None:
                 first += timedelta(0,time)
@@ -62,12 +62,12 @@ def make(system_symbols,symbols,timeStamp,modulus=0.5,ratio=2.0,debug=False):
                 first = timedelta(0,time)
             
                 
-            timeStamp += timedelta(0,time)
+            time_stamp += timedelta(0,time)
 
         for i in range(len(pulses)):
             pulses[i] = pulses[i] - first
 
-        return pulses,timeStamp
+        return pulses,time_stamp
 
 #Helper Functions!
 def check_values(sym_a,sym_b):
@@ -77,15 +77,13 @@ def check_values(sym_a,sym_b):
             equal &= False
     return equal
 
-def got_enough(little_buf,big_buf):
-    """Check to see if we have enough data in the buffers."""
-    if len(big_buf) < len(little_buf):
-        raise Exception('Not enough pulses!')
+class NoSymbolFound(Exception): pass
+class NoSync(Exception): pass
 
-def get_after(timeStamp,buf):
+def get_after(time_stamp,buf):
     t_buf = []
     for b in buf:
-        if b >= timeStamp:
+        if b >= time_stamp:
             t_buf.append(b)
     return t_buf
     
@@ -110,7 +108,7 @@ def retrieve_sub_buf(buf,min,max):
     return t_buf
             
 def match(symbol_buf,data_buf,jitter):
-    """Checks to see if two buffers of timestamps are approximately equal."""
+    """Checks to see if two buffers of time_stamps are approximately equal."""
     all_ok = True
     for count in range(len(symbol_buf)):
         close_enough = False
@@ -135,8 +133,8 @@ class Decoder:
         self.jitter = jitter
 
     def decode(self,buf,debug=False):
-        """Decodes a buffer of timestamps. Each timestamp represents when a pulse occured.
-        buf - iterable of timestamps"""
+        """Decodes a buffer of time_stamps. Each time_stamp represents when a pulse occured.
+        buf - iterable of time_stamps"""
 
         
         #first find an identifer
@@ -147,14 +145,23 @@ class Decoder:
         while(1):
 
             while(1):
+                if debug:
+                    print self.identifiers
                 for id in self.identifiers:
                     #create a perfect identifier
                     id_pulses,trash = make(system_symbols,[id],buf[0])
-                    id_pulses = id_pulses #convert to TS
-                    got_enough(id_pulses,buf)
+
+                    if len(id_pulses) > len(buf):
+                        if debug:
+                            print "Not enough!"
+                        #raise NoSync('Sync Length: %s , Buffer Length: %s' % (len(id_pulses),len(buf)))
+                        return data
+
                     if match(id_pulses,buf,self.jitter):
+                        if debug:
+                            print "Found!"
                         id.pulses = id_pulses
-                        id.timestamp = id_pulses[0]
+                        id.time_stamp = buf[0]
                         data.append(id)
                         if debug:
                             print "Found ID"
@@ -162,10 +169,9 @@ class Decoder:
 
                 if found_id: 
                     break
-                #if not found_id:
-                #    return data
-
                 buf.pop(0) #else pop and search
+            if debug:
+                print "Switch"
 
         #once we've got the identifier, let's find as many symbols as we can
             earliest, latest = next_symbol_area(data[-1],self.jitter)
@@ -189,10 +195,12 @@ class Decoder:
                 for sym in self.symbols:
                     sym_pulses, trash = make(system_symbols,[sym],sym_buf[0])
                     sym_pulses = sym_pulses
-                    got_enough(sym_pulses,sym_buf)
+                    if len(sym_pulses) > len(sym_buf):
+                        break
+
                     if match(sym_pulses,sym_buf,self.jitter):
                         sym.pulses = sym_pulses
-                        sym.timeStamp = sym_pulses[0]
+                        sym.time_stamp = sym_pulses[0]
                         data.append(sym)
                         if debug:
                             print "Found Symbol!"
@@ -216,6 +224,7 @@ class Decoder:
 
 
 if __name__ == '__main__':
+    import unittest
 
     class DecoderTestCase(unittest.TestCase):
         def setUp(self):
