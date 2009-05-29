@@ -6,8 +6,7 @@ class pydrill_object:
         return not result
 
     def __eq__(self,other):
-        """Keeps me from trying to see if objects equal each other!"""
-        raise Exception('No!')
+        return self is other
 
 class tool_data(pydrill_object):
     def __init__(self,name,value=None,time_stamp=None,slowData=None):

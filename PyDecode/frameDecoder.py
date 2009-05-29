@@ -1,25 +1,32 @@
 from symbol_generation import generateSymbols, generateIdentifiers
 from frame_generation import generate
-from objects import symbol
 from copy import copy
-import pdb
 
 def match_frame(data,frames):
-    #if we've got junk
+
     if len(data) <= 1:
         return None
     
-    try:
-        found_frame = [frame for i, frame in enumerate(frames) if data[0].value == frame.identifier.value and len(frame) == len(data)][0]
-    except IndexError:
-        raise Exception('No frames found!')
+    #for i, frame in enumerate(frames):
+        #    print data, frame, len(data), len(frame), data[0].value, frame.identifier.value
+
+    #    print data[0].value == frame.identifier.value 
+    #    print len(frame) == len(data)
+        
+    #found_frame = [frame for i, frame in enumerate(frames) if data[0].value == frame.identifier.value and len(frame) == len(data)]
+
+    found_frame = frames[data[0].value]
     
+    print data[0].value, found_frame, found_frame.identifier.value, len(found_frame), len(data)
+    if len(found_frame) != len(data):
+        return None
+
     found_frame = copy(found_frame)
     found_frame.symbols = data[1:]
     
     return found_frame
 
-class FrameDecoder:
+class frame_decoder:
     def __init__(self):
         self.frames = generate()
         self.identifiers = generateIdentifiers()
@@ -45,10 +52,18 @@ class FrameDecoder:
                     new_frames[count].append(d) #append it to the frame buffer
         
         #for all of our new frame
+
+        new_frames.remove([])
             
+        print len(new_frames)
+        for i in new_frames: print i
         
-        #match all of the frames
         matched_frames = [match_frame(frame,self.frames) for frame in new_frames]
+        
+        try:
+            matched_frames.remove(None)
+        except ValueError:
+            pass
         
         new_data = []
         
@@ -67,7 +82,7 @@ class FrameDecoder:
 
 if __name__ == '__main__':
     import unittest, pdb, random
-
+    
     class FrameDecoderTests(unittest.TestCase):
         def setUp(self):
             self.frames = generate()
@@ -98,5 +113,4 @@ if __name__ == '__main__':
             except Exception:
                 pass
             
-    unittest.main()
-    
+    fd = frame_decoder()

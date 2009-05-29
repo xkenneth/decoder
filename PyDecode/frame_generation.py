@@ -20,8 +20,8 @@ frame9 = ['temperature','temperature']
 frame10 = ['pressure','pressure']
 frame11 = ['toolface','toolface']
 frame12 = ['gammaray','gammaray']
-frame13 = ['g','g']
-frame14 = ['h','h']
+frame13 = ['g']
+frame14 = ['h']
 frame15 = ['gx','gx','gy','gy']
 frame16 = ['hx','hx','hy','hy']
 frame17 = ['toolface']
@@ -99,9 +99,9 @@ def generateErrors():
 if __name__ == '__main__':
     
 
-    frames = generate()
+    generated_frames = generate()
     
-    for i in frames:
+    for i in generated_frames:
         print i.identifier, i.symbols, i.blocks
             
             

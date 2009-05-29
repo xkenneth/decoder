@@ -101,6 +101,29 @@ def generateSymbols():
     
 
 if __name__ == '__main__':
+    symbols = generateSymbols()
     
-    print generateSymbols()
-    print generateIdentifiers()
+    test_frame1_data = [symbols[0],symbols[1]]
+    test_frame1 = [frameIdentifier1,symbols[0],symbols[1]]
+
+    test_sequence = [
+        frameIdentifier1,
+        symbols[10],
+        symbols[0],
+        symbols[8],
+        frameIdentifier1,
+        symbols[11],
+        symbols[1],
+        symbols[27],
+        frameIdentifier1,
+        symbols[12],
+        symbols[0],
+        symbols[15],
+        frameIdentifier1,
+        symbols[13],
+        symbols[10],
+        frameIdentifier1,
+        ]
+    
+    #print generateSymbols()
+    #print generateIdentifiers()
