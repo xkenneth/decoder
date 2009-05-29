@@ -31,3 +31,11 @@ test_sequence2 = [
     symbols[0],
     symbols[8],
     ]
+
+
+test_sequence3 = [
+    symbols[3],
+    symbols[0],
+    symbols[10],
+    symbols[0],
+    ]

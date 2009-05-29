@@ -53,22 +53,23 @@ class frame_decoder:
         
         #for all of our new frame
 
-        new_frames.remove([])
+        try:
+            new_frames.remove([])
+        except ValueError:
+            pass #if it's not present
             
         print len(new_frames)
         for i in new_frames: print i
         
         matched_frames = [match_frame(frame,self.frames) for frame in new_frames]
         
-        try:
-            matched_frames.remove(None)
-        except ValueError:
-            pass
+        matched_frames = [i for i in matched_frames if i is not None]
         
         new_data = []
         
         #decompose the data
-        [new_data.extend(frame.decompose()) for frame in matched_frames]
+
+        [new_data.extend(i.decompose()) for i in matched_frames]
         
         #for frame in new_frames:
 
