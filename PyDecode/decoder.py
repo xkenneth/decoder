@@ -145,8 +145,7 @@ class Decoder:
         while(1):
 
             while(1):
-                if debug:
-                    print self.identifiers
+                if debug: pass
                 for id in self.identifiers:
                     #create a perfect identifier
                     id_pulses,trash = make(system_symbols,[id],buf[0])

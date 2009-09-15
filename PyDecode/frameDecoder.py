@@ -17,7 +17,7 @@ def match_frame(data,frames):
 
     found_frame = frames[data[0].value]
     
-    print data[0].value, found_frame, found_frame.identifier.value, len(found_frame), len(data)
+    #print data[0].value, found_frame, found_frame.identifier.value, len(found_frame), len(data)
     if len(found_frame) != len(data):
         return None
 
@@ -58,8 +58,8 @@ class frame_decoder:
         except ValueError:
             pass #if it's not present
             
-        print len(new_frames)
-        for i in new_frames: print i
+        #print len(new_frames)
+        #ofor i in new_frames: print i
         
         matched_frames = [match_frame(frame,self.frames) for frame in new_frames]
         

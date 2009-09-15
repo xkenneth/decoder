@@ -7,6 +7,8 @@ from objects import symbol_frame
 from copy import copy
 import symbol_generation
 
+#name_axis_resolution
+
 frame0 = ['toolstatus__','toolstatus__']
 frame1 = ['azimuth__','azimuth__']
 frame2 = ['inclination__','inclination__']
