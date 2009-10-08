@@ -1,8 +1,13 @@
 import math
 from objects import symbol, bar
 
-narrow = .5
-wide = 1.0
+#standard
+#narrow = 0.5
+#wide = 1.0
+
+#half time
+narrow = 1.0
+wide = 2.0
 
 #defining the integer symbols
 symbol0 = ['n','n','w','w','n']
